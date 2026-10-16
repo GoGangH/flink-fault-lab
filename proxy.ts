@@ -1,16 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * /admin(발표자 대본) 접근 제한. 브라우저 기본 로그인 창(HTTP Basic Auth)을 띄운다.
- * 아이디는 아무거나, 비밀번호는 환경변수 ADMIN_PASSWORD.
- * 로컬 개발에서 ADMIN_PASSWORD를 비워 두면 그냥 통과시킨다.
+ * /admin(발표자 대본) 접근 제한. 선택 사항이다.
+ * 환경변수 ADMIN_PASSWORD가 없으면 누구나 열 수 있고,
+ * 설정하면 브라우저 기본 로그인 창(HTTP Basic Auth)을 띄운다. 아이디는 아무거나, 비밀번호는 ADMIN_PASSWORD.
  */
 export function proxy(request: NextRequest) {
   const password = process.env.ADMIN_PASSWORD;
-  if (!password) {
-    if (process.env.NODE_ENV === "development") return NextResponse.next();
-    return new NextResponse("ADMIN_PASSWORD 환경변수를 설정해야 대본을 볼 수 있습니다.", { status: 503 });
-  }
+  if (!password) return NextResponse.next();
 
   const header = request.headers.get("authorization") ?? "";
   if (header.startsWith("Basic ")) {
