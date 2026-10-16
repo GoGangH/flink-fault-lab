@@ -17,9 +17,9 @@ npm run build    # 프로덕션 빌드 확인
 - `T` 목차, `G` 현재 페이지 가이드
 - 시뮬레이션 페이지: `Space` 다음 단계(단계별 모드), `1` `2` tm-1 / tm-2 종료(실시간 모드), `P` 일시정지
 
-## 발표자 대본 (/presenter)
+## 발표자 대본 (/script)
 
-`/presenter`에서 페이지별 대본, 화면 동작, 경과 시간을 볼 수 있습니다.
+`/script`에서 페이지별 대본, 화면 동작, 경과 시간을 볼 수 있습니다.
 
 - 비밀번호 없이 누구나 열 수 있습니다.
 - 같은 브라우저에서 발표 창(`/`)을 함께 열어 두면 현재 페이지 대본이 따라오고, 대본 창에서 넘기면 발표 창도 넘어갑니다.
@@ -31,7 +31,7 @@ npm run build    # 프로덕션 빌드 확인
 app/
   layout.tsx              폰트, 메타데이터
   page.tsx                섹션을 Deck에 순서대로 배치
-  presenter/page.tsx      발표자 대본 (/presenter)
+  script/page.tsx         발표자 대본 (/script)
   globals.css             Tailwind 테마 토큰 + SVG 그림용 상태 클래스
 components/
   deck/                   페이지 넘김, 목차 서랍, 목차 목록
