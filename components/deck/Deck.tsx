@@ -38,7 +38,7 @@ export default function Deck({ pages, children }: { pages: PageInfo[]; children:
     window.scrollTo(0, 0);
   }, [cur]);
 
-  // 발표자 대본 창(/대본)과 현재 페이지 동기화
+  // 발표자 대본 창(/presenter)과 현재 페이지 동기화
   const pageId = pages[cur].id;
   const channel = useRef<ReturnType<typeof openDeckChannel> | null>(null);
   useEffect(() => {

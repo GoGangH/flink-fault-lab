@@ -1,5 +1,5 @@
 /**
- * 발표 대본. /대본 페이지에서 보인다.
+ * 발표 대본. /presenter 페이지에서 보인다.
  * say: 말할 내용(문단 단위), cue: 화면에서 할 동작, min: 예상 시간(분)
  */
 export type ScriptPage = { min: number; say: string[]; cue?: string[] };
