@@ -1,0 +1,213 @@
+@import "tailwindcss";
+
+/* 팔레트: 레코드=코발트, barrier=호박색, 장애=적색, 정상=녹색, 미커밋 트랜잭션=보라 */
+:root {
+  --bg: #edf0f4; --surface: #ffffff; --sunk: #e2e7ee; --ink: #132033; --muted: #5a6678; --line: #cdd5e0;
+  --rec: #2f5bd3; --rec-ink: #ffffff; --barrier: #b87710; --barrier-dot: #f2b632; --barrier-ink: #2a1d00; --barrier-tint: #fbf0dc;
+  --fail: #c7372e; --fail-tint: #fbe9e7; --ok: #2b8453; --ok-tint: #e2f2e9; --pending: #7e57c9; --pending-tint: #efe8fa;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d131b; --surface: #151d28; --sunk: #1b2532; --ink: #e3e9f1; --muted: #95a2b4; --line: #2a3748;
+    --rec: #7b9bff; --rec-ink: #0d131b; --barrier: #efb04b; --barrier-dot: #efb04b; --barrier-ink: #1b1405; --barrier-tint: #3a2c12;
+    --fail: #f2685c; --fail-tint: #3a1d1c; --ok: #5bc489; --ok-tint: #16301f; --pending: #b497f5; --pending-tint: #2a2140;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-rec: var(--rec);
+  --color-rec-ink: var(--rec-ink);
+  --color-barrier: var(--barrier);
+  --color-barrier-tint: var(--barrier-tint);
+  --color-barrier-ink: var(--barrier-ink);
+  --color-barrier-dot: var(--barrier-dot);
+  --color-fail: var(--fail);
+  --color-fail-tint: var(--fail-tint);
+  --color-ok: var(--ok);
+  --color-ok-tint: var(--ok-tint);
+  --color-pending: var(--pending);
+  --color-pending-tint: var(--pending-tint);
+  --font-sans: var(--font-plex), "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: var(--font-jb), "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --animate-page-in: page-in 0.45s ease both;
+  --animate-flow: flow 6s linear infinite;
+  @keyframes flow {
+    /* 레코드와 barrier가 같은 거리(240px = 레코드 8칸)를 움직여야 barrier가 레코드 사이에 끼어 함께 흐른다 */
+    to { background-position: 120px 50%, 240px 50%; }
+  }
+  @keyframes page-in {
+    from { opacity: 0.001; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body {
+    background: var(--bg); color: var(--ink);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  h1, h2, h3 { text-wrap: balance; }
+  :focus-visible { outline: 2px solid var(--rec); outline-offset: 2px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before { animation: none !important; transition: none !important; }
+  }
+}
+
+/*
+ * 아래는 시뮬레이터 엔진(lib/simulator.ts)이 매 프레임 직접 붙였다 떼는 상태 클래스와
+ * SVG 텍스트 스타일이다. JSX에서 정적으로 쓰는 스타일은 전부 Tailwind 유틸리티로 작성했다.
+ */
+@layer components {
+  /* 페이지 덱 */
+  .deck > section { display: none; }
+  .deck:not(.ready) > section:first-child,
+  .deck > section.cur { display: block; }
+  .deck > section.cur { animation: var(--animate-page-in); }
+
+  /* 표지 흐름 띠: 파란 점=레코드, 노란 점=barrier (레코드 사이에 끼어 같은 속도로) */
+  .flow::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle, var(--barrier-dot) 0 5px, var(--barrier) 5px 6px, transparent 7px) -120px 50% / 240px 30px repeat-x,
+      radial-gradient(circle, var(--rec) 0 5px, transparent 6px) 0 50% / 30px 30px repeat-x;
+    animation: var(--animate-flow);
+  }
+
+  /* 시뮬레이터 스테이지 (SVG) */
+  .stage text { font-family: var(--font-sans); }
+  .t-title { font-size: 15px; font-weight: 600; fill: var(--ink); }
+  .t-sub, .t-mono, .t-st, .t-tm, .t-small, .t-bar, .t-warn, .t-key, .t-bkey { font-family: var(--font-mono) !important; }
+  .t-sub { font-size: 12.5px; fill: var(--muted); }
+  .t-mono { font-size: 13px; fill: var(--ink); }
+  .t-st { font-size: 11px; fill: var(--muted); letter-spacing: .04em; }
+  .t-tm { font-size: 13px; font-weight: 600; fill: var(--muted); }
+  .t-small { font-size: 11px; fill: var(--muted); }
+  .t-bar { font-size: 10.5px; fill: var(--barrier); font-weight: 600; }
+  .t-warn { font-size: 11.5px; fill: var(--fail); font-weight: 600; }
+  .t-key { font-size: 10px; font-weight: 700; fill: var(--rec-ink); }
+  .t-bkey { font-size: 10px; font-weight: 700; fill: var(--barrier-ink); font-family: var(--font-mono) !important; }
+  .jm-box { fill: var(--sunk); stroke: var(--line); stroke-width: 1.5; }
+  .store-box { fill: var(--barrier-tint); stroke: var(--barrier); stroke-width: 1.2; transition: fill .3s, stroke .3s; }
+  .store-box.done { fill: var(--ok-tint); stroke: var(--ok); }
+  .pill { fill: var(--ok-tint); stroke: var(--ok); }
+  .pill-t { font-size: 11px; font-weight: 600; fill: var(--ok); font-family: var(--font-mono) !important; }
+  .pill.bad { fill: var(--fail-tint); stroke: var(--fail); } .pill-t.bad { fill: var(--fail); }
+  .pill.warn { fill: var(--barrier-tint); stroke: var(--barrier); } .pill-t.warn { fill: var(--barrier); }
+  .tm-box { fill: transparent; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 6 5; cursor: pointer; transition: fill .3s, stroke .3s; }
+  .tm-box:hover { stroke: var(--fail); }
+  [data-mode="step"] .tm-box { cursor: default; }
+  [data-mode="step"] .tm-box:hover { stroke: var(--line); }
+  .tm-tip { opacity: 0; transition: opacity .2s; }
+  g:has(> .tm-box:hover) .tm-tip { opacity: 1; fill: var(--fail); }
+  .tm-box.tm-dead { fill: var(--fail-tint); stroke: var(--fail); stroke-dasharray: none; }
+  .tm-box.tm-new { fill: var(--ok-tint); stroke: var(--ok); stroke-dasharray: none; }
+  .tm-x { stroke: var(--fail); stroke-width: 3; opacity: .55; }
+  .edge { stroke: var(--line); stroke-width: 3; }
+  .chan { stroke: var(--line); stroke-width: 2.5; }
+  .chan.blocked { stroke: var(--fail); stroke-width: 2.5; stroke-dasharray: 5 4; }
+  .edge-thin { stroke: var(--line); stroke-width: 2; stroke-dasharray: 4 4; }
+  .msg-path { stroke: var(--barrier); stroke-width: 1.2; stroke-dasharray: 2 5; fill: none; opacity: .55; }
+  .slot-box { fill: var(--surface); stroke: var(--line); stroke-dasharray: 4 3; transition: fill .3s, stroke .3s; }
+  .slot-box.meta { fill: var(--ok-tint); stroke: var(--ok); stroke-dasharray: none; }
+  .store-lane { stroke: var(--barrier); stroke-width: 1; stroke-dasharray: 1 5; fill: none; opacity: .5; }
+  .store-box.failed { fill: var(--fail-tint); stroke: var(--fail); }
+  .slot-box.fresh { fill: var(--barrier-tint); stroke: var(--barrier); stroke-dasharray: 4 3; }
+  .cell { stroke-width: 1.5; transition: fill .2s; }
+  .cell-k { font-family: var(--font-mono); font-size: 12px; font-weight: 600; fill: var(--ink); }
+  .cell-o { font-family: var(--font-mono); font-size: 9.5px; fill: var(--muted); }
+  .cell-unread { fill: var(--surface); stroke: var(--line); }
+  .cell-new { stroke: var(--ok); stroke-width: 2; }
+  .producer-box { fill: var(--ok-tint); stroke: var(--ok); stroke-width: 1.2; }
+  .part-box { fill: var(--surface); stroke: var(--line); }
+  .region-box { fill: none; stroke: var(--rec); stroke-width: 1.5; stroke-dasharray: 6 4; transition: stroke .3s; }
+  .region-box.hit { stroke: var(--barrier); stroke-width: 2.5; }
+  .buf-outer { fill: var(--sunk); stroke: var(--line); }
+  .buf-box { fill: var(--surface); stroke: var(--line); stroke-dasharray: 3 3; }
+  .cell-read { fill: var(--line); stroke: transparent; }
+  .cell-lost { fill: var(--fail-tint); stroke: var(--fail); }
+  .cell-ok { fill: var(--ok-tint); stroke: transparent; }
+  .cell-pending, .cell-pre { fill: var(--pending-tint); stroke: var(--pending); stroke-dasharray: 3 2; }
+  .cell-aborted { fill: transparent; stroke: var(--line); opacity: .55; }
+  .cell-dup { fill: var(--fail-tint); stroke: var(--fail); }
+  .hb { stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 3 4; fill: none; }
+  .node rect { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; transition: fill .25s, stroke .25s; }
+  .node.st-FAILED rect { fill: var(--fail-tint); stroke: var(--fail); }
+  .node.st-CANCELING rect, .node.st-CANCELED rect { fill: var(--sunk); stroke: var(--muted); stroke-dasharray: 4 3; }
+  .node.st-DEPLOYING rect, .node.st-INITIALIZING rect { fill: var(--pending-tint); stroke: var(--pending); }
+  .node.flash rect { stroke: var(--barrier); stroke-width: 3.5; fill: var(--barrier-tint); }
+  .node.st-FAILED .t-st { fill: var(--fail); }
+  .node.st-RUNNING .t-st { fill: var(--ok); }
+  .node.st-DEPLOYING .t-st, .node.st-INITIALIZING .t-st { fill: var(--pending); }
+
+  /* 해설 줄 */
+  .narr .dot { background: var(--ok); }
+  .narr.bad .dot { background: var(--fail); }
+  .narr.warn .dot { background: var(--barrier); }
+
+  /* 입력·출력 토픽 칩 */
+  .chip { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 36px; padding: 3px 5px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; line-height: 1.25; border: 1.5px solid transparent; font-variant-numeric: tabular-nums; }
+  .chip b { font-size: 12px; }
+  .chip span { font-size: 9.5px; opacity: .75; }
+  .chip.unread { background: var(--surface); border-color: var(--line); color: var(--muted); }
+  .chip.read { background: var(--sunk); color: var(--ink); }
+  .chip.lost { background: var(--fail-tint); border-color: var(--fail); color: var(--fail); text-decoration: line-through; }
+  .chip.cut { margin-left: 8px; }
+  .chip.cut::before { content: ""; position: absolute; left: -7px; top: -3px; bottom: -3px; width: 3px; border-radius: 2px; background: var(--barrier); }
+  .chip.ok { background: var(--ok-tint); color: var(--ink); }
+  .chip.pending, .chip.pre { background: var(--pending-tint); border-color: var(--pending); border-style: dashed; color: var(--pending); }
+  .chip.aborted { background: transparent; border-color: var(--line); color: var(--muted); text-decoration: line-through; opacity: .7; }
+  .chip.dup { background: var(--fail-tint); border-color: var(--fail); color: var(--fail); }
+  .chip.dup::after { content: "중복"; position: absolute; top: -9px; right: -4px; font-size: 8.5px; background: var(--fail); color: var(--surface); border-radius: 4px; padding: 0 3px; line-height: 1.5; }
+
+  /* 복구 단계 */
+  .steps li.active { background: var(--barrier-tint); }
+  .steps li.active .n { border-color: var(--barrier); background: var(--barrier); color: var(--surface); }
+  .steps li.done .n { border-color: var(--ok); background: var(--ok); color: var(--surface); }
+  .steps li.failed { background: var(--fail-tint); }
+  .steps li.failed .n { border-color: var(--fail); background: var(--fail); color: var(--surface); }
+
+  /* 결과 검증 */
+  .metric.bad b { color: var(--fail); }
+  .state-tbl td { padding: 5px 6px; text-align: right; border-bottom: 1px solid var(--line); font-family: var(--font-mono); }
+  .state-tbl td:first-child { text-align: left; }
+  .state-tbl td.miss { color: var(--fail); font-weight: 600; }
+  .verdict { background: var(--ok-tint); color: var(--ok); }
+  .verdict.bad { background: var(--fail-tint); color: var(--fail); }
+
+  /* JM 로그 */
+  .log div { white-space: pre-wrap; word-break: break-word; }
+  .log time { color: var(--muted); }
+  .log i { font-style: normal; color: var(--rec); }
+  .log .INFO b { color: var(--ok); }
+  .log .WARN b { color: var(--barrier); }
+  .log .ERROR b { color: var(--fail); }
+  .log .CHAOS { color: var(--fail); }
+
+  /* barrier 스텝퍼 (SVG) */
+  .bs text { font-family: var(--font-mono); }
+  .bs-ch { stroke: var(--line); stroke-width: 3; }
+  .bs-src rect { fill: var(--sunk); stroke: var(--ink); stroke-width: 1.2; }
+  .bs-op { fill: var(--surface); stroke: var(--ink); stroke-width: 1.5; transition: fill .3s, stroke .3s; }
+  .bs-op.snap { fill: var(--barrier-tint); stroke: var(--barrier); stroke-width: 3; }
+  .bs-op.done { fill: var(--ok-tint); stroke: var(--ok); }
+  .bs-txt { fill: var(--ink); font-size: 13px; }
+  .bs-mute { fill: var(--muted); font-size: 11px; }
+  .it { transition: transform .75s cubic-bezier(.45, .1, .2, 1), opacity .5s; }
+  .it circle.r { fill: var(--rec); }
+  .it text.r { fill: var(--rec-ink); font-size: 10.5px; font-weight: 700; }
+  .it.blocked circle.r { fill: var(--muted); }
+  .it.saved circle.r { fill: var(--pending); }
+  .it circle.b { fill: var(--barrier-dot); }
+  .it text.b { fill: var(--barrier-ink); font-size: 11px; font-weight: 700; }
+}
